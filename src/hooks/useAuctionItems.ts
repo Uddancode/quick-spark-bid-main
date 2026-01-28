@@ -24,12 +24,36 @@ export function useAuctionItems() {
       setItems(data || []);
     } catch (error) {
       console.error('Failed to fetch items:', error);
-      const errorMessage = error instanceof Error 
-        ? error.message.includes('Failed to fetch') || error.message.includes('NetworkError')
-          ? 'Backend server is not running. Please start it with: cd server && npm start'
-          : error.message
-        : 'Failed to load auction items';
-      
+
+      // Friendlier, production-safe error messages
+      const isBrowser =
+        typeof window !== 'undefined' && typeof window.location !== 'undefined';
+      const isProdLike =
+        isBrowser &&
+        window.location.hostname !== 'localhost' &&
+        window.location.hostname !== '127.0.0.1';
+      const apiPointsToLocalhost = API_URL.includes('localhost');
+
+      let errorMessage = 'Failed to load auction items.';
+
+      if (
+        error instanceof Error &&
+        (error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError') ||
+          error.message.includes('TypeError'))
+      ) {
+        // Network / CORS / unreachable backend
+        if (isProdLike && apiPointsToLocalhost) {
+          errorMessage =
+            'Cannot reach backend: frontend is still configured to use a localhost API. In production, set VITE_API_URL to your deployed backend URL.';
+        } else {
+          errorMessage =
+            'Could not reach the backend server. Please check your connection or try again in a moment.';
+        }
+      } else if (error instanceof Error && error.message) {
+        errorMessage = error.message;
+      }
+
       toast({
         title: 'Error',
         description: errorMessage,
