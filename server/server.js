@@ -46,10 +46,15 @@ const bidLocks = new Map();
 
 /**
  * REST API: GET /items
- * Returns a list of auction items (title, starting price, current bid, auction end time)
+ * Returns a list of auction items (title, starting price, current bid, auction end time).
+ *
+ * For demo purposes, this endpoint also keeps auctions "ongoing":
+ * - If an item's auction_end_time is already in the past, we push it 60 minutes into the future.
+ * - This makes sure the frontend always sees active auctions it can bid on.
  */
 app.get('/items', async (req, res) => {
   try {
+    // Fetch all items
     const { data, error } = await supabase
       .from('auction_items')
       .select('id, title, description, image_url, starting_price, current_bid, current_bidder_id, auction_end_time, created_at, updated_at, bid_version')
@@ -60,7 +65,40 @@ app.get('/items', async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch auction items' });
     }
 
-    res.json(data || []);
+    let items = data || [];
+
+    // Detect auctions that have already ended
+    const now = Date.now();
+    const endedIds = items
+      .filter((item) => new Date(item.auction_end_time).getTime() <= now)
+      .map((item) => item.id);
+
+    // If any have ended, push their end time 60 minutes into the future
+    if (endedIds.length > 0) {
+      const newEndTime = new Date(now + 60 * 60 * 1000).toISOString();
+      const { error: updateError } = await supabase
+        .from('auction_items')
+        .update({ auction_end_time: newEndTime, updated_at: new Date().toISOString() })
+        .in('id', endedIds);
+
+      if (updateError) {
+        console.error('Error auto-extending auctions:', updateError);
+      } else {
+        // Re-fetch items so the response includes the updated end times
+        const { data: refreshed, error: refetchError } = await supabase
+          .from('auction_items')
+          .select('id, title, description, image_url, starting_price, current_bid, current_bidder_id, auction_end_time, created_at, updated_at, bid_version')
+          .order('auction_end_time', { ascending: true });
+
+        if (refetchError) {
+          console.error('Error refetching items after auto-extend:', refetchError);
+        } else if (refreshed) {
+          items = refreshed;
+        }
+      }
+    }
+
+    res.json(items);
   } catch (error) {
     console.error('Unexpected error:', error);
     res.status(500).json({ error: 'Internal server error' });
