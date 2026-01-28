@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@layer base {
+  :root {
+    /* Dark auction theme */
+    --background: 220 20% 6%;
+    --foreground: 210 20% 95%;
+
+    --card: 220 18% 10%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 38 92% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 142 76% 45%;
+
+    --radius: 0.75rem;
+
+    /* Custom auction tokens */
+    --winning: 142 76% 45%;
+    --outbid: 0 72% 55%;
+    --urgent: 38 92% 55%;
+    --bid-flash: 142 76% 45%;
+    
+    /* Gradients */
+    --gradient-winning: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(160 70% 40%) 100%);
+    --gradient-outbid: linear-gradient(135deg, hsl(0 72% 55%) 0%, hsl(15 75% 50%) 100%);
+    --gradient-urgent: linear-gradient(135deg, hsl(38 92% 55%) 0%, hsl(25 95% 50%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 18% 12%) 0%, hsl(220 18% 8%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(220 20% 8%) 0%, hsl(220 20% 4%) 100%);
+    
+    /* Shadows */
+    --shadow-glow-winning: 0 0 30px -5px hsl(142 76% 45% / 0.4);
+    --shadow-glow-outbid: 0 0 30px -5px hsl(0 72% 55% / 0.4);
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
+    --shadow-card-hover: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
+
+    --sidebar-background: 220 20% 6%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 142 76% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 210 20% 85%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 142 76% 45%;
+  }
+
+  .dark {
+    --background: 220 20% 6%;
+    --foreground: 210 20% 95%;
+    --card: 220 18% 10%;
+    --card-foreground: 210 20% 95%;
+    --popover: 220 18% 10%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 210 20% 85%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 38 92% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 142 76% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  /* Bid flash animation */
+  @keyframes bid-flash {
+    0% {
+      box-shadow: 0 0 0 0 hsl(var(--bid-flash) / 0.7);
+    }
+    50% {
+      box-shadow: 0 0 30px 10px hsl(var(--bid-flash) / 0.3);
+    }
+    100% {
+      box-shadow: 0 0 0 0 hsl(var(--bid-flash) / 0);
+    }
+  }
+
+  @keyframes price-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes urgent-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes countdown-tick {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+  }
+
+  .animate-bid-flash {
+    animation: bid-flash 0.6s ease-out;
+  }
+
+  .animate-price-pulse {
+    animation: price-pulse 0.3s ease-out;
+  }
+
+  .animate-urgent-pulse {
+    animation: urgent-pulse 1s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-countdown-tick {
+    animation: countdown-tick 1s ease-in-out infinite;
+  }
+
+  /* Status badges */
+  .badge-winning {
+    @apply bg-[hsl(var(--winning))] text-primary-foreground font-semibold;
+    box-shadow: var(--shadow-glow-winning);
+  }
+
+  .badge-outbid {
+    @apply bg-[hsl(var(--outbid))] text-destructive-foreground font-semibold;
+    box-shadow: var(--shadow-glow-outbid);
+  }
+
+  .badge-urgent {
+    @apply bg-[hsl(var(--urgent))] text-accent-foreground font-semibold;
+  }
+
+  /* Card variants */
+  .auction-card {
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+    @apply border border-border rounded-xl overflow-hidden transition-all duration-300;
+  }
+
+  .auction-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    @apply border-primary/30;
+  }
+
+  .auction-card.winning {
+    @apply border-[hsl(var(--winning))]/50;
+    box-shadow: var(--shadow-glow-winning);
+  }
+
+  .auction-card.outbid {
+    @apply border-[hsl(var(--outbid))]/50;
+    box-shadow: var(--shadow-glow-outbid);
+  }
+
+  /* Countdown timer */
+  .countdown-urgent {
+    @apply text-[hsl(var(--urgent))] animate-urgent-pulse;
+  }
+
+  .countdown-normal {
+    @apply text-muted-foreground;
+  }
+
+  /* Price display */
+  .price-display {
+    @apply font-mono text-2xl font-bold tracking-tight;
+  }
+
+  .price-winning {
+    @apply text-[hsl(var(--winning))];
+  }
+
+  .price-outbid {
+    @apply text-[hsl(var(--outbid))];
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glass-effect {
+    @apply bg-card/80 backdrop-blur-md;
+  }
+}
